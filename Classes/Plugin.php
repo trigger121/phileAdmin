@@ -36,17 +36,19 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 	public function on($eventKey, $data = null) {
 		if ($eventKey == 'request_uri') {
 			$uri = explode('/', $data['uri']);
-
+			
 			// check for users (first time run)
 			if(Users::count_users() === 0) {
 				$default_user = Utilities::array_to_object($this->settings['default_user']);
+				
 				if(empty($default_user->password)) {
 					$default_user->password = $this->config['encryptionKey'];
 				}
 				$default_user->email = $default_user->username . '@example.com';
-
+				
 				// create default user
 				Users::save_user($default_user);
+				
 				$user = Users::get_user_by_username($default_user->username);
 
 				\Phile\Session::set('PhileAdmin_logged', $user);

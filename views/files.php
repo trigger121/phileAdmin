@@ -2,7 +2,7 @@
 <section id="content" class="content">
 	<div class="breadcrumb">
 		<ul>
-			<li><a href="#"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
+			<li><a href="<?php echo $base_url ?>/admin/files"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
 			<li>Listing Files</li>
 		</ul>
 		<small>For images, visit the <a href="photos">Photos</a> page.</small>

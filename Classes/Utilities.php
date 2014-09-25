@@ -151,13 +151,20 @@ class Utilities {
 		$finfo = finfo_open(FILEINFO_MIME_TYPE);
 		$image_obj = new \stdClass();
 		$pathinfo = pathinfo($value);
+		
+
+		
+		
 		$image_obj->name = basename($value);
-		$image_obj->slug = self::slugify(str_replace('.'.$pathinfo['extension'], '', basename($value)));
+		if(array_key_exists('extension',$pathinfo)){
+			$image_obj->slug = self::slugify(str_replace('.'. $pathinfo['extension'], '', basename($value)));
+		
 		$image_obj->path = str_replace(ROOT_DIR, '', $value);
 		$image_obj->url = $base_url . '/'.str_replace(ROOT_DIR, '', $value);
 		$image_obj->info = getimagesize($value);
 		$image_obj->mime = finfo_file($finfo, $value);
 		return $image_obj;
+		}
 	}
 
 	public static function file_info($value, $base_url)

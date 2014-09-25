@@ -64,15 +64,19 @@ class Pages {
 
 	public function templates()
 	{
-		$templates = \Phile\Utility::getFiles(THEMES_DIR . $this->config['theme'], '/^.*\.(html)$/');
+		$templates = \Phile\Utility::getFiles(THEMES_DIR . $this->config['theme'],'\Phile\FilterIterator\GeneralFileFilterIterator' , '/^.*\.(html)$/');
 		$template_obj;
 		// new objects for each template
 		foreach ($templates as $key => $value) {
-			$template_obj[$key] = new \stdClass();
-			$template_obj[$key]->name = basename($value);
-			$template_obj[$key]->slug = str_replace('.html', '', basename($value));
-			$template_obj[$key]->path = str_replace(ROOT_DIR, '', $value);
+			
+			if(is_dir($value) == false){
+				$template_obj[$key] = new \stdClass();
+				$template_obj[$key]->name = basename($value);
+				$template_obj[$key]->slug = str_replace('.html', '', basename($value));
+				$template_obj[$key]->path = str_replace(ROOT_DIR, '', $value);
+			}
 		}
+
 		$data = array_merge(array(
 			'title' => 'Templates',
 			'body_class' => 'templates',
@@ -84,31 +88,29 @@ class Pages {
 	public function plugins()
 	{	
 		$plugin_obj = array();
-		$plugins = \Phile\Utility::getFiles(PLUGINS_DIR, '/^.*(config.php)$/');
+		$plugins = \Phile\Utility::getFiles(PLUGINS_DIR,'\Phile\FilterIterator\GeneralFileFilterIterator' , '/^.*(config.php)$/');
 		$current_config = $this->config['plugins'];
 		
 		foreach($plugins as $plugin_path) {
-			// max path depth 2 levels
-			$plugin_name = str_replace(PLUGINS_DIR, '', $plugin_path);
-			if(substr_count($plugin_name, DIRECTORY_SEPARATOR) > 2) continue;
-			$plugin_name = str_replace(DIRECTORY_SEPARATOR . 'config.php', '', $plugin_name);
-			$plugin_name = str_replace('/', '\\', $plugin_name);
-			$pluginConfiguration = \Phile\Utility::load($plugin_path);
-			
-			// new objects for each plugin
-			$plugin_obj[$plugin_name] = new \stdClass();
-			$plugin_obj[$plugin_name]->id = str_replace(DIRECTORY_SEPARATOR, "\\", $plugin_name);
-			$plugin_obj[$plugin_name]->name = $plugin_name;
-			$plugin_obj[$plugin_name]->active = isset($current_config[$plugin_name]['active']) ? $current_config[$plugin_name]['active'] : false;
-			$plugin_obj[$plugin_name]->slug = Utilities::slugify($plugin_name);
-			$plugin_obj[$plugin_name]->path = DIRECTORY_SEPARATOR . str_replace(ROOT_DIR, '', PLUGINS_DIR . $plugin_name);
-			
-			foreach (array('author', 'namespace', 'url', 'version') as $item) {
-				$new_key = strtolower($item);
-				$plugin_obj[$plugin_name]->{$new_key} = isset($pluginConfiguration['info'][$item]) ? $pluginConfiguration['info'][$item]: null;
-			}
-		}
-		
+			$plugin_name = str_replace(PLUGINS_DIR.'phile\\', '', $plugin_path);
+			$bool = file_exists($plugin_name);			
+			if($bool == false && strpos($plugin_name,'\\') == false){			
+				if(substr_count($plugin_name, DIRECTORY_SEPARATOR) > 2) continue;				
+				$plugin_name = str_replace(DIRECTORY_SEPARATOR . 'config.php', '', $plugin_name);				
+				$plugin_name = str_replace('/', '\\', $plugin_name);				
+				$pluginConfiguration = \Phile\Utility::load($plugin_path.'\\config.php');				
+				$plugin_obj[$plugin_name] = new \stdClass();
+				$plugin_obj[$plugin_name]->id = str_replace(DIRECTORY_SEPARATOR, "\\", $plugin_name);
+				$plugin_obj[$plugin_name]->name = $plugin_name;
+				$plugin_obj[$plugin_name]->active = isset($current_config[$plugin_name]['active']) ? $current_config[$plugin_name]['active'] : false;
+				$plugin_obj[$plugin_name]->slug = Utilities::slugify($plugin_name);
+				$plugin_obj[$plugin_name]->path = DIRECTORY_SEPARATOR . str_replace(ROOT_DIR, '', PLUGINS_DIR . $plugin_name);				
+				foreach (array('author', 'namespace', 'url', 'version') as $item) {
+					$new_key = strtolower($item);					
+					$plugin_obj[$plugin_name]->{$new_key} = isset($pluginConfiguration['info'][$item]) ? $pluginConfiguration['info'][$item]: null;
+				}				
+			}			
+		}		
 		$data = array_merge(array(
 			'title' => 'Plugins',
 			'body_class' => 'plugins',
@@ -120,14 +122,15 @@ class Pages {
 
 	public function photos()
 	{
-		$photos = \Phile\Utility::getFiles(CONTENT_DIR . 'uploads/images', '/^.*\.('. $this->settings['image_types'] .')$/');
+		$photos = \Phile\Utility::getFiles(CONTENT_DIR . 'uploads/images','\Phile\FilterIterator\GeneralFileFilterIterator' , '/^.*\.('. $this->settings['image_types'] .')$/');
 
 		$image_obj = array();
 		// new objects for each image
 		foreach ($photos as $key => $value) {
-			$image_obj[$key] = Utilities::photo_info($value, $this->config['base_url']);
-		}
-
+			if(is_dir($value) == false){
+				$image_obj[$key] = Utilities::photo_info($value, $this->config['base_url']);
+			}
+		}		
 		if(count($image_obj) > 0) {
 			$data = array_merge(array(
 				'title' => 'Photos',
@@ -141,7 +144,7 @@ class Pages {
 				'photos' => false
 				), $this->settings);
 		}
-
+		
 		Utilities::render('photos.php', $data);
 	}
 
@@ -155,7 +158,9 @@ class Pages {
 		foreach ($files as $key => $value) {
 			// ignore dotfiles
 			if(strpos(basename($value), '.') !== (int)0) {
-				$file_obj[$key] = Utilities::file_info($value, $this->config['base_url']);
+				if(is_dir($value) == false){
+					$file_obj[$key] = Utilities::file_info($value, $this->config['base_url']);
+				}
 			}
 		}
 
@@ -319,13 +324,16 @@ class Pages {
 
 	public function download()
 	{
-		$file = CONTENT_DIR . Utilities::filter($_GET['url']);
+		$file = ROOT_DIR . Utilities::filter($_GET['url']);
+		
 		if (file_exists($file)) {
 			$pathinfo = pathinfo($file);
+			
 			if (!Utilities::safe_extension($pathinfo)) {
 				throw new Exception("Error Processing Request", 1);
 				exit;
 			}
+			
 			// Override 404 header
 			header($_SERVER['SERVER_PROTOCOL'].' 200 OK');
 			// forget the custom mimetype, lets just download
@@ -347,6 +355,7 @@ class Pages {
 	{
 		// get information about each user...
 		$users = Users::get_all_users();
+		
 		$data = array_merge(array(
 			'title' => 'Users',
 			'body_class' => 'users',

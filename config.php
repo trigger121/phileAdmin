@@ -16,9 +16,9 @@ $config = array(
   'default_user' => array(
       'username' => 'admin',
       'display_name' => 'Phile Admin',
-	  'password' => '' // empty means that encryptionKey will be used as a password
+	  'password' => 'password' // empty means that encryptionKey will be used as a password
     ),
-   'admin_url' => '/admin', // must have a leading slash
+   'admin_url' => '/phile/phile/admin/pages', // must have a leading slash
   'unsafe_settings' => array(
     'active',
     'admin_url',
@@ -39,7 +39,7 @@ $config = array(
   'origin' => '../plugins/phile/adminPanel/views',
   'homepage' => 'http://localhost:8888/PhileCMS',
   'portal_name' => 'PhileCMS Admin',
-  'admin_url' => '/admin', // must have a leading slash
+  'admin_url' => '/phile/phile/admin/pages', // must have a leading slash
   'filename_is_title' => 'true',
   'image_types' => 'jpg|jpeg|svg|png|gif|webp|ico|bmp',
   // the post title gets overwritten by the new file function

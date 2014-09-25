@@ -12751,6 +12751,7 @@ $(document).ready(function() {
 		if (photos) {
 			$('.photo-list').find('.selected').each(function(index, el) {
 				var val = $(el).find('input').attr('data-url');
+				
 				var win = window.open('download?url=' + val, '_blank');
 				win.focus();
 			});
@@ -12826,10 +12827,11 @@ $(document).ready(function() {
 			password: $('#password').val()
 		}).then(function(res) {
 			console.log(res);
+			
 			vex.dialog.alert(res.message);
 			setTimeout(function() {
 				vex.close();
-				window.location.href = '';
+				window.location.href = 'pages';
 			}, TIMEOUT_LENGTH);
 		}, function(err) {
 			console.log(err);

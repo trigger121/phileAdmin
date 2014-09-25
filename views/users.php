@@ -2,7 +2,7 @@
     <section id="content" class="content">
       <div class="breadcrumb">
         <ul>
-          <li><a href="#"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
+          <li><a href="<?php echo $base_url ?>/admin/pages"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
           <li>User Listings</li>
         </ul>
       </div>

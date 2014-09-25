@@ -2,7 +2,7 @@
 <section id="content" class="content">
 	<div class="breadcrumb">
 		<ul>
-			<li><a href="#"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
+			<li><a href="<?php echo $base_url ?>/admin"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
 			<li><?php echo $title ?> <em><?php
 				$page_title = (method_exists($current_page, 'getTitle')) ? $current_page->getTitle(): $title;
 				echo $page_title; ?></em></li>

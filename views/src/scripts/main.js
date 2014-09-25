@@ -165,8 +165,9 @@ $(document).ready(function() {
 		if (photos) {
 			$('.photo-list').find('.selected').each(function(index, el) {
 				var val = $(el).find('input').attr('data-url');
-				var win = window.open('download?url=' + val, '_blank');
-				win.focus();
+				console.log(val);
+				//var win = window.open('download?url=' + val, '_blank');
+				//win.focus();
 			});
 		}
 		return false;

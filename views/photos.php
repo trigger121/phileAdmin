@@ -1,8 +1,8 @@
 <?php include 'partials/header.php'; ?>
 <section id="content" class="content">
 	<div class="breadcrumb">
-		<ul>
-			<li><a href="#">Photos</a></li><span class="oi" data-glyph="chevron-right"></span>
+		<ul>			
+			<li><a href="<?php echo $base_url ?>/admin/photos">Photos</a></li><span class="oi" data-glyph="chevron-right"></span>
 			<li>Listing Photos</li>
 		</ul>
 	</div>
@@ -24,6 +24,7 @@
 		foreach($photos as $photo): ?>
 			<div class="photo-item" id="<?php echo $photo->slug ?>">
 				<img src="<?php echo $photo->url ?>" width="<?php echo $photo->info[0] ?>" height="<?php echo $photo->info[1] ?>">
+				
 				<p><input type="checkbox" name="" value="<?php echo $photo->slug ?>" data-url="<?php echo $photo->path ?>"> <?php echo $photo->name ?></p>
 			</div>
 		<?php endforeach;

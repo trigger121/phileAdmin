@@ -3,7 +3,7 @@
 		<form name="form_settings" id="form_settings">
 		  <div class="breadcrumb">
 			<ul>
-			  <li><a href="#"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
+			 <li><a href="<?php echo $base_url ?>/admin/settings"><?php echo $title ?></a></li><span class="oi" data-glyph="chevron-right"></span>
 			  <li>Admin Settings</li>
 			</ul>
 		  </div>

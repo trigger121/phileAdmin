@@ -22,10 +22,12 @@ class Users {
 	 * @return int
 	 */
 	public static function count_users() {
-		$users = \Phile\Utility::getFiles(Users::get_users_path(), '/^.*\.(json)$/');
+		$users = \Phile\Utility::getFiles(Users::get_users_path(), '\Phile\FilterIterator\GeneralFileFilterIterator' , '/^.*\.(json)$/'); /* '/^.*\.(json)$/' */
+		
+		
 		return count($users);
 	}
-
+	
 	/*!
 	 * get all users
 	 * @param  string $order field name to order data
@@ -33,12 +35,24 @@ class Users {
 	 */
 	public static function get_all_users($order = 'username') {
 		$aUsers = array();
-		$users_folder = \Phile\Utility::getFiles(Users::get_users_path(), '/^.*\.(json)$/');
-		foreach ($users_folder as $key => $user_file) {
-			$id = str_ireplace('.json', '', basename($user_file));
-			$user = Users::get_user_by_hash($id);
-			$aUsers[$user->{$order}] = $user;
+		
+		
+		//$user_folder = new DirectoryIterator(Users::get_users_path());
+		$user_folder = scandir(Users::get_users_path());
+		
+			
+		
+		//$users_folder = \Phile\Utility::getFiles(Users::get_users_path(), '\Phile\FilterIterator\GeneralFileFilterIterator' , '/^.*\.(json)$/'); /* '/^.*\.(json)$/' */
+		
+		//foreach ($users_folder as $key => $user_file) {
+		foreach($user_folder as $key =>$user_file){
+			if(is_dir($user_file) == false){
+				$id = str_ireplace('.json', '', basename($user_file));
+				$user = Users::get_user_by_hash($id);
+				$aUsers[$user->{$order}] = $user;
+			}
 		}
+		
 		ksort($aUsers);
 		return $aUsers;
 	}
