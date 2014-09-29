@@ -22,7 +22,7 @@ class Users {
 	 * @return int
 	 */
 	public static function count_users() {
-		$users = \Phile\Utility::getFiles(Users::get_users_path(), '\Phile\FilterIterator\GeneralFileFilterIterator' , '/^.*\.(json)$/'); /* '/^.*\.(json)$/' */
+		$users = \Phile\Utility::getFiles(Users::get_users_path(), '\Phile\FilterIterator\GeneralFileFilterIterator' ); /* '/^.*\.(json)$/' */
 		
 		
 		return count($users);

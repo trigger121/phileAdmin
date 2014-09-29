@@ -17,6 +17,13 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,300,700' rel='stylesheet' type='text/css'>
 	<link rel="stylesheet" href="<?php echo $origin ?>/css/style.css" media="screen" />
+	<link rel=stylesheet href="<?php echo $origin ?>/js/CodeMirror/lib/codemirror.css">
+	<!--<link rel=stylesheet href="<?php echo $origin ?>/js/CodeMirror/doc/docs.css">-->
+<style>
+  .CodeMirror { height: 600px; border: 1px solid #ddd; }
+  .CodeMirror-scroll { max-height: 600px; }
+  .CodeMirror pre { padding-left: 7px; line-height: 1.25; }
+</style>
 	<!--[if IE]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 </head>
 <body class="<?php echo $body_class ?>">

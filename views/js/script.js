@@ -12764,13 +12764,19 @@ $(document).ready(function() {
 		return false;
 	});
 	$('#save-file').on('click', function(event) {
-		event.preventDefault();
+		event.preventDefault();		
+		if(editor.length != false){
+				editor.save();
+				
+			}
 		$.post('save', {
 			path: $(this).attr('data-url'),
 			pageType: pageType,
 			value: $('#editor-area').val()
 		}).then(function(res) {
 			console.log(res);
+			
+			
 			vex.dialog.alert('<p>File Saved Succcessfully</p>');
 			setTimeout(function() {
 				vex.close();
@@ -12883,7 +12889,7 @@ $(document).ready(function() {
 			vex.dialog.alert(res.message);
 			setTimeout(function() {
 				vex.close();
-				location.reload();
+				//location.reload();
 			}, TIMEOUT_LENGTH);
 		}, function(err) {
 			console.log(err);

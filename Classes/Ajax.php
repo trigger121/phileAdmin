@@ -355,6 +355,7 @@ class Ajax {
 				}
 			}
 		}
+		
 		$saved = file_put_contents('config.json', json_encode($new_config));
 		if($saved !== false) {
 			$this->send_json(array(
