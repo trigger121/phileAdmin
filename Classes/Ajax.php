@@ -57,22 +57,36 @@ class Ajax {
 			'content' => file_get_contents($this->data['path'])
 			));
 	}
-
+	public function create_folder(){
+		$foldername = $this->data['value'];
+		
+		mkdir(CONTENT_DIR.'/uploads/images/'.Utilities::slugify(basename($foldername)));
+		
+		$this->send_json(array(
+					'status' => true,
+					'message' => CONTENT_DIR.'/uploads/images/'.Utilities::slugify(basename($foldername))
+					));
+	}
 	public function delete_file()
 	{
 		foreach ($this->data as $value) {
 			if (preg_match('/^content/', $value)) {
-				$value = str_replace('content/', '', $value);
-				$file = CONTENT_DIR . $value;
+				//$value = str_replace('content/', '', $value);
+				$file = ROOT_DIR . $value;
+				
 			} elseif (preg_match('/^users/', $value)) {
 				$value = str_replace('users/', '', $value . '.json');
 				$file = Users::get_users_path() . $value;
+				
 			} else {
 				$file = ROOT_DIR . $value;
+				
 			}
 			if(!file_exists($file)){
 				$value = str_replace('/', DIRECTORY_SEPARATOR, $value);
+				
 			}
+			
 			if(unlink($file)) {
 				$this->send_json(array(
 					'status' => true,
@@ -179,7 +193,11 @@ class Ajax {
 			$clean_name = $filename . '-' . $date->getTimestamp() . '.' . $info['extension'];
 			// check the file type so we put it in the right folder
 			$folder = (preg_match('/^.*\.('. $this->settings['image_types'] .')$/', $clean_name) === 1) ? 'images/': 'files/';
-			$target_file = CONTENT_DIR . 'uploads/' . $folder . $clean_name;
+			if(isset($_POST['url'])){
+				$target_file = CONTENT_DIR . 'uploads/' . $folder . $_POST['url'].'/'.$clean_name;
+			}else{
+				$target_file = CONTENT_DIR . 'uploads/' . $folder . $clean_name;
+			}
 			move_uploaded_file($_FILES['file']['tmp_name'], $target_file);
 			if ($folder == 'images/') {
 				$template = $this->photo_template($target_file);
@@ -191,7 +209,7 @@ class Ajax {
 				'message' => $template
 				));
 		}
-		exit;
+		//exit;
 	}
 
 	public function save()
@@ -324,13 +342,13 @@ class Ajax {
 				}
 			}
 		}
-
-		$saved = file_put_contents(str_ireplace(DIRECTORY_SEPARATOR . 'Classes', '', __DIR__) . DIRECTORY_SEPARATOR . 'config.json', json_encode($new_settings));
-
+		$sets['plugins']['phile\\adminPanel']['settings'] = $new_settings;
+		//$saved = file_put_contents(str_ireplace(DIRECTORY_SEPARATOR . 'Classes', '', __DIR__) . DIRECTORY_SEPARATOR . 'config.json', json_encode($new_settings));
+		$saved = Utilities::check_config_json('set',$sets);
 		if($saved !== false) {
 			$this->send_json(array(
 				'status' => true,
-				'message' => 'Settings saved'
+				'message' => $saved
 				));
 		} else {
 			$this->send_json(array(
@@ -343,7 +361,9 @@ class Ajax {
 
 	public function save_config()
 	{
+		
 		$params = $this->data['config'];
+		
 		$config = array();
 		parse_str(htmlspecialchars_decode($params), $config);
 		$new_config = $config['config'];
@@ -356,7 +376,9 @@ class Ajax {
 			}
 		}
 		
-		$saved = file_put_contents('config.json', json_encode($new_config));
+		
+		
+		$saved = Utilities::check_config_json($mode = 'set',$new_config);
 		if($saved !== false) {
 			$this->send_json(array(
 				'status' => true,
@@ -386,24 +408,29 @@ class Ajax {
 		} else {
 			$this->send_json(array(
 				'status' => false,
-				'message' => 'Error deletinf plugin'
+				'message' => 'Error deleting plugin'
 				));
 		}
 	}
-
+	
 	public function save_plugins()
-	{
-		$plugins = $this->data['plugins'];
+	{		
+		$plugins = $this->data['plugins'];		
 		$plugins_config = array();
-		$new_plugins_config = array();
-
+		$new_plugins_config = array();		
 		parse_str(htmlspecialchars_decode($plugins), $plugins_config);
-
-		foreach($plugins_config['plugin_active'] as $key=>$value) {
-			$new_plugins_config[$key] = array('active' => $value);
+		$check = array();
+		$namespace = 'phile\\';
+		$newconfig = array();
+		foreach($plugins_config['plugin_active'] as $key=>$value) {			
+			if($value == 1){
+				$newconfig[$namespace.$key] = array('active'=>true);
+			}else{
+				$newconfig[$namespace.$key] = array('active'=>false);
+			}
 		}
-
-		$saved = file_put_contents('config_plugins.json', str_replace(array('"1"', '"0"'), array('true', 'false'), json_encode($new_plugins_config)));
+		$config['plugins'] = $newconfig;
+		$saved = Utilities::check_config_json('set',$config);		
 		if($saved !== false) {
 			$this->send_json(array(
 				'status' => true,
@@ -414,6 +441,6 @@ class Ajax {
 				'status' => false,
 				'message' => 'Error saving plugins config'
 				));
-		}
+		}		
 	}
 }

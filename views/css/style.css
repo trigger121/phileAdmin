@@ -990,6 +990,9 @@ table {
 
 .oi[data-glyph=zoom-out]:before {
   content: '\e0de'; }
+.oi[data-glyph=new-folder]:before{
+	content:url('folder-icon.png');
+}  
 
 /*! Hint.css - v1.3.2 - 2014-05-18
 * http://kushagragour.in/lab/hint/

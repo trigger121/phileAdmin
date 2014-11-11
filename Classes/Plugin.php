@@ -32,7 +32,7 @@ class Plugin extends \Phile\Plugin\AbstractPlugin implements \Phile\Gateway\Even
 		\Phile\Event::registerEvent('request_uri', $this);
 		$this->config = \Phile\Registry::get('Phile_Settings');
 	}
-
+	
 	public function on($eventKey, $data = null) {
 		if ($eventKey == 'request_uri') {
 			$uri = explode('/', $data['uri']);

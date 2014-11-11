@@ -16,7 +16,7 @@ class Utilities {
 	private static $config;
 	private static $parser;
 	private static $initialized = false;
-
+	protected $settings;
 	private static function init()
 	{
 		if (self::$initialized){
@@ -131,7 +131,77 @@ class Utilities {
 		$saved = file_put_contents($dir, $contents);
 		return $saved;
 	}
+	public static function get_config($key = null) {
+		
+		$settings = \Phile\Registry::get('Phile_Settings');
+		if($key != null){
+			return $settings[$key];
+		}else{
+			return $settings;
+		}
+		
+	}
+	
+	/***
+		this expects an array passed in as $value
+		
 
+	***/
+	public static function set_config($value= array()) {						
+		$newc = array_replace_recursive($value, Utilities::check_config_json());
+		if(is_array($newc)){		
+			\Phile\Registry::set('Phile_Settings', $newc);
+			//file_put_contents('config.json', json_encode($newc));
+			return $value;
+		}else{
+			return false;
+		}
+		
+	}
+	
+	public static function check_config_json($mode = 'get',$newc =null){
+		if($mode == 'get'){
+			if(file_exists('config.json')){
+				$cfig = Utilities::object_to_array(json_decode(file_get_contents('config.json')));
+				
+				if(array_key_exists($newc,$cfig)){
+					$config = $cfig[$newc];
+				}else{
+					$config = $cfig;
+				}
+				
+			}else{
+				$config = Utilities::get_config();
+			}
+			
+			
+		}elseif($mode =='set'){
+			if(file_exists('config.json') && $newc != null){
+				$check = Utilities::check_config_json('get');
+				$newc = array_replace_recursive($check,$newc);
+				$config = file_put_contents('config.json', json_encode($newc));				
+			}else{
+				$config = Utilities::set_config();
+			}
+			
+		}
+		return $config;
+	}
+	
+	
+	public static function object_to_array($obj) {
+		if(is_object($obj)){
+			$obj = (array) $obj;		
+			$new = array();
+			foreach($obj as $key => $val) {
+				$new[$key] = self::object_to_array($val)? self::object_to_array($val) : $val;
+			}		
+			return $new;       
+		}		
+	}
+	
+	
+	
 	public static function array_to_object($array) {
 		$obj = new \stdClass;
 		foreach($array as $k => $v) {
@@ -145,25 +215,77 @@ class Utilities {
 		}
 		return $obj;
 	}
-
+	public static function gallery($value, $base_url){
+		$dirs = scandir(CONTENT_DIR.'uploads/images');
+		$new_url = CONTENT_DIR.'uploads/images';
+		$parents = array();
+		foreach($dirs as $dir => $directory){
+			if(!strpos($directory,'.') && $directory != '.' && $directory != '..'){
+				$gallery_obj = new \stdClass();
+				$finfo = finfo_open(FILEINFO_MIME_TYPE);
+				$gallery_obj->name = $directory;
+				$gallery_obj->slug = $directory;
+				$gallery_obj->slugged = ucwords(str_replace('-',' ',$directory));
+				$gallery_obj->path = str_replace(ROOT_DIR,'',$new_url.'/'.$directory);
+				$gallery_obj->dir = $new_url.'/'.$directory;
+				$gallery_obj->url = $base_url .'/'.str_replace(ROOT_DIR,'',PLUGINS_DIR.'phile/adminPanel/images/folder-icon.jpg');
+				$gallery_obj->info = getimagesize(PLUGINS_DIR.'phile/adminPanel/images/folder-icon.jpg');
+				$gallery_obj->mime = finfo_file($finfo,PLUGINS_DIR.'phile/adminPanel/images/folder-icon.jpg');
+				$gallery_images = scandir($gallery_obj->dir);
+				$child = array();
+				
+				
+				foreach($gallery_images as $gallery_image => $image){
+					if($image != '.' && $image != '..'){
+						
+						$children = new \stdClass();
+						$pathinfo = pathinfo($gallery_obj->dir.'/'.$image);
+						$finfo = finfo_open(FILEINFO_MIME_TYPE);
+						$children->name = basename($gallery_obj->dir.'/'.$image);
+						$children->slug = self::slugify(str_replace('.'. $pathinfo['extension'], '', basename($gallery_obj->dir.'/'.$image)));		
+						$children->path = str_replace(ROOT_DIR, '',$gallery_obj->dir.'/'.$image);
+						$children->url = $base_url . '/'.str_replace(ROOT_DIR, '', $gallery_obj->dir.'/'.$image);
+						$children->info = getimagesize($gallery_obj->dir.'/'.$image);
+						$children->mime = finfo_file($finfo, $gallery_obj->dir.'/'.$image);
+						$child[] = $children;
+						
+						
+					}else{
+						continue;
+					}
+					
+				}
+				$gallery_obj->children = $child;
+				
+				$parents[] = $gallery_obj;
+			}
+		}
+		
+		
+				
+		//var_dump($gallery_obj);
+		return $parents;
+		
+	}
 	public static function photo_info($value, $base_url)
 	{
 		$finfo = finfo_open(FILEINFO_MIME_TYPE);
 		$image_obj = new \stdClass();
 		$pathinfo = pathinfo($value);
 		
-
+		
 		
 		
 		$image_obj->name = basename($value);
 		if(array_key_exists('extension',$pathinfo)){
-			$image_obj->slug = self::slugify(str_replace('.'. $pathinfo['extension'], '', basename($value)));
-		
-		$image_obj->path = str_replace(ROOT_DIR, '', $value);
-		$image_obj->url = $base_url . '/'.str_replace(ROOT_DIR, '', $value);
-		$image_obj->info = getimagesize($value);
-		$image_obj->mime = finfo_file($finfo, $value);
-		return $image_obj;
+			$image_obj->slug = self::slugify(str_replace('.'. $pathinfo['extension'], '', basename($value)));		
+			$image_obj->path = str_replace(ROOT_DIR, '', $value);
+			$image_obj->url = $base_url . '/'.str_replace(ROOT_DIR, '', $value);
+			$image_obj->info = getimagesize($value);
+			$image_obj->mime = finfo_file($finfo, $value);
+			return $image_obj;
+		}else{
+			
 		}
 	}
 
@@ -251,8 +373,8 @@ class Utilities {
 	public static function error_log($message) {
 		$error_file = realpath(dirname(dirname(__FILE__)))."/error_log";
 		$file_handler = fopen($error_file, 'a');
-		$message = date("Y-m-d H:i:s")." ". $message ." \n";
-		$write = fwrite($file_handler, $message);
+		$message[] = date("Y-m-d H:i:s")." ". $message ." \n";
+		$write = fwrite($file_handler, implode($message,','));
 		fclose($file_handler);
 	}
 }

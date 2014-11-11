@@ -12636,7 +12636,8 @@ $(document).ready(function() {
 			items.push({
 				value: $input.attr('data-url')
 			});
-			deleteFile($input.attr('data-url')).then(function() {
+			console.log($input.attr('data-url'));
+			/*deleteFile($input.attr('data-url')).then(function() {
 				var $target = $('#' + $input.val());
 				if (plugins) {
 					$target.find('strong').toggle();
@@ -12651,8 +12652,10 @@ $(document).ready(function() {
 					});
 				}
 			}, function function_name(argument) {
+				//console.log(argument);
 				vex.dialog.alert('<p>Error Deleting File</p>');
-			});
+				
+			});*/
 		}
 		$input.each(function(index, el) {
 			$(el).prop('checked', false);
@@ -12665,6 +12668,7 @@ $(document).ready(function() {
 		vex.dialog.confirm({
 			message: 'Are you absolutely sure you want to ' + ((plugins) ? 'toggle' : 'delete') + ' ' + count + ' item' + ((count > 1) ? 's' : '') + '?',
 			callback: function(value) {
+				
 				if (value) {
 					var items = [];
 					$parent.each(function(i, e) {
@@ -12678,6 +12682,29 @@ $(document).ready(function() {
 	}
 	$('#delete-selected').on('click', function() {
 		deleteItems($('.item-list').find('tbody').find('tr'));
+	});
+	$('#create-folder').on('click',function(e){
+		e.preventDefault();
+		var name = prompt('Name of folder :' ,'');
+		if (name != '' && name != null) {
+			 $.post('create_folder', {
+						value: name
+			}).then(function() {
+			
+			
+			}, function function_named(argument) {
+				console.log(argument);
+				//vex.dialog.alert('<p>Error Deleting File</p>');
+				
+			});
+		}else{
+			if(window.confirm('Please input a correct folder name ?')){
+						
+						$('#create-folder').click();
+					
+			};
+		}	
+		return false;
 	});
 	$('.content').on('click', '.photo-item', function() {
 		var $input = $(this).find('input');
@@ -12765,10 +12792,10 @@ $(document).ready(function() {
 	});
 	$('#save-file').on('click', function(event) {
 		event.preventDefault();		
-		if(editor.length != false){
+		if($('.CodeMirror').length > 0){
 				editor.save();
 				
-			}
+		}
 		$.post('save', {
 			path: $(this).attr('data-url'),
 			pageType: pageType,
@@ -12866,10 +12893,10 @@ $(document).ready(function() {
 			settings : $("#form_settings").serialize()
 		}).then(function(res) {
 			console.log(res);
-			vex.dialog.alert(res.message);
+			//vex.dialog.alert(res.message);
 			setTimeout(function() {
-				vex.close();
-				location.reload();
+				//vex.close();
+				//location.reload();
 			}, TIMEOUT_LENGTH);
 		}, function(err) {
 			console.log(err);
@@ -12882,6 +12909,7 @@ $(document).ready(function() {
 	});
 	$('.save-config').on('click', function(event) {
 		event.preventDefault();
+		
 		$.post('save_config', {
 			config : $("#form_config").serialize()
 		}).then(function(res) {
@@ -12890,6 +12918,7 @@ $(document).ready(function() {
 			setTimeout(function() {
 				vex.close();
 				//location.reload();
+				
 			}, TIMEOUT_LENGTH);
 		}, function(err) {
 			console.log(err);

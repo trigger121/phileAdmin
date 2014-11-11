@@ -122,6 +122,12 @@ $config = array(
       'title' => 'Settings',
       'icon' => 'cog'
       ),
+	  array(
+      'name' => 'browse',
+      'url' => 'browse',
+      'title' => 'Browse Files',
+      'icon' => 'cog'
+      ),
     )
   );
 

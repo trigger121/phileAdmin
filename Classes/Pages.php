@@ -84,14 +84,20 @@ class Pages {
 			), $this->settings);
 		Utilities::render('templates.php', $data);
 	}
-
+	
 	public function plugins()
 	{	
 		$plugin_obj = array();
 		$plugins = \Phile\Utility::getFiles(PLUGINS_DIR,'\Phile\FilterIterator\GeneralFileFilterIterator' );// '/^.*(config.php)$/'
 		$current_config = $this->config['plugins'];
 		
+		if(file_exists('config.json')){
+			$current_config = Utilities::check_config_json('get','plugins');			
+		}else{
+			$current_config = $this->config['plugins'];
+		}		
 		foreach($plugins as $plugin_path) {
+			
 			$plugin_name =  str_replace(PLUGINS_DIR.'phile\\', '', $plugin_path);
 			$bool = file_exists($plugin_name);
 			
@@ -118,8 +124,10 @@ class Pages {
 					$plugin_obj[$plugin_name]->{$new_key} = isset($pluginConfiguration['info'][$item]) ? $pluginConfiguration['info'][$item]: null;
 				}				
 			}
-				
-		}				
+				   
+		}	
+	
+		
 		$data = array_merge(array(
 			'title' => 'Plugins',
 			'body_class' => 'plugins',
@@ -128,22 +136,38 @@ class Pages {
 			), $this->settings);
 		Utilities::render('plugins.php', $data);
 	}
-
+	
 	public function photos()
-	{
-		$photos = \Phile\Utility::getFiles(CONTENT_DIR . 'uploads/images','\Phile\FilterIterator\GeneralFileFilterIterator' ); // '/^.*\.('. $this->settings['image_types'] .')$/'
-
+	{	$dir = CONTENT_DIR.'uploads/images';
+		$phots = scandir($dir);
+		//$photos = \Phile\Utility::getFiles(CONTENT_DIR . 'uploads/images','\Phile\FilterIterator\GeneralFileFilterIterator' ); // '/^.*\.('. $this->settings['image_types'] .')$/'
+		
 		$image_obj = array();
 		// new objects for each image
-		foreach ($photos as $key => $value) {
-			if(is_dir($value) == false){
-				$image_obj[$key] = Utilities::photo_info($value, $this->config['base_url']);
+		foreach ($phots as $key => $value) {
+			
+			if($value != '.' || $value != '..'){
+			$val = $dir.'/'.$value;
+			if(is_dir($val) == false ){
+				
+				
+				$image_obj[$key] = Utilities::photo_info($val, $this->config['base_url']);
+			}else{
+				 $gallery = Utilities::gallery($val, $this->config['base_url']);
+				foreach($gallery as $gal_obj => $gal){
+					//var_dump($gal);
+					$image_obj[$gal->name] = $gal;
+				}
+				
 			}
-		}		
+			}
+			
+		}	
+			
 		if(count($image_obj) > 0) {
 			$data = array_merge(array(
 				'title' => 'Photos',
-				'body_class' => 'photos',
+				'body_class' => 'photos',				
 				'photos' => $image_obj
 				), $this->settings);
 		} else {
@@ -192,9 +216,9 @@ class Pages {
 
 	public function config() {
 		$safe_config = array();
-		// lets generate a config that is safe for the frontend to edit and display
-		//var_dump($this->config);
-		foreach ($this->config as $key => $value) {
+		
+		$config = Utilities::check_config_json('get');
+		foreach ($config as $key => $value) {
 			// skip items in the unsafe array
 			if (is_array($value) || is_object($value) || in_array($key, $this->settings['unsafe_config'])) {
 				continue;
@@ -213,7 +237,29 @@ class Pages {
 			
 		Utilities::render('config.php', $data);
 	}
-
+	public function browse(){
+		$directories = scandir(THEMES_DIR);
+		$files = array();
+		foreach($directories as $directory => $dir){
+				if($dir != '.' && $dir != '..'){
+					$filesobj = new \StdClass();
+					if(is_dir(THEMES_DIR .$dir. DIRECTORY_SEPARATOR)){
+						$filesobj->dir = str_replace(ROOT_DIR,'',THEMES_DIR . $dir .DIRECTORY_SEPARATOR);
+						$filesobj->name = $dir;
+					}else{
+						$filesobj->dir = str_replace(ROOT_DIR,'',THEMES_DIR. $dir);
+						$filesobj->name = $dir;
+					}
+					$files[$directory] = $filesobj;
+				}
+		}		
+		$data = array_merge(array(
+			'title' => 'Browse Files',
+			'body_class' => 'browse',
+			'files'=>$files
+		),$this->settings);
+		Utilities::render('browse.php',$data);
+	}
 	public function edit()
 	{
 		$get = Utilities::filter($_GET);
@@ -251,22 +297,36 @@ class Pages {
 	{
 		$safe_settings = array();
 		// lets generate a config that is safe for the frontend to edit and display
-
-		foreach ($this->settings as $key => $value) {
+		$current_config = Utilities::check_config_json('get','plugins');
+		
+		$settings = $current_config['phile\\adminPanel']['settings'];
+		
+		
+		foreach ($settings as $key => $value) {
 			// skip arrays and objects since we cant handle them as key => value
 			// skip items in the unsafe array
-			if (is_array($value) || is_object($value) || in_array($key, $this->settings['unsafe_settings']) ) {
+			//var_dump($value);
+			
+			if (is_array($value)){
+				//$safe_settings[$key] = $value;				
+				continue;
+			}elseif(is_object($value)){
+				//$safe_settings[$key] = Utilities::object_to_array($value);
+			continue;
+			}elseif(in_array($key, $this->settings['unsafe_settings'])) {
 				continue;
 			} else {
 				$safe_settings[$key] = $value;
 			}
 		}
+		
 		$data = array_merge(array(
 			'title' => 'Settings',
 			'body_class' => 'settings',
 			'safe_settings' => $safe_settings,
 			'required_fields' => $this->settings['required_fields']
 			), $this->settings);
+			
 		Utilities::render('settings.php', $data);
 	}
 

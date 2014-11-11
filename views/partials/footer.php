@@ -55,8 +55,8 @@ if(isset($_GET['type']) && $_GET['type'] == 'template' && $pathinfo['extension']
   <?php } }?>
   
   
-  <?php 
-if(isset($_GET['type']) && $_GET['type'] == 'page'){
+ <!-- <?php 
+//if(isset($_GET['type']) && $_GET['type'] == 'page'){
 ?>
 <script>
     var editor = CodeMirror.fromTextArea(document.getElementById("editor-area"), {
@@ -67,6 +67,6 @@ if(isset($_GET['type']) && $_GET['type'] == 'page'){
     });
 	
   </script>
-  <?php } ?>
+  <?php// } ?>-->
 </body>
 </html>
